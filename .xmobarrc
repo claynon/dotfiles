@@ -1,0 +1,67 @@
+Config { font = "-*-terminus-*-*-*-*-12-*-*-*-*-*-*-u"
+       , bgColor = "#002b36"
+       , fgColor = "#657b83"
+       , border = NoBorder
+       , borderColor = "black"
+       , position = Top 
+       , lowerOnStart = True
+       , hideOnStart = False
+       , persistent = True
+       , allDesktops = True
+       , commands = [-- network activity monitor (dynamic interface resolution)
+                     Run DynNetwork      [ "--template" , "<dev>: <tx>kB/s|<rx>kB/s"
+                                         , "--Low"      , "100000"        -- 100 kB/s
+                                         , "--High"     , "1000000"       -- 1 MB/s
+                                         , "--low"      , "green"
+                                         , "--normal"   , "darkorange"
+                                         , "--high"     , "red"
+                                         ] 10
+                     -- cpu activity monitor
+                    , Run MultiCpu       [ "--template" , "Cpu: <total>%"
+                                         , "--Low"      , "50"         -- units: %
+                                         , "--High"     , "85"         -- units: %
+                                         , "--low"      , "green"
+                                         , "--normal"   , "darkorange"
+                                         , "--high"     , "red"
+                                         ] 10
+                      -- cpu core temperature monitor
+                    , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C|<core2>°C"
+                                         , "--Low"      , "70"        -- units: °C
+                                         , "--High"     , "80"        -- units: °C
+                                         , "--low"      , "green"
+                                         , "--normal"   , "darkorange"
+                                         , "--high"     , "red"
+                                         ] 50
+                      -- memory usage monitor
+                    , Run Memory         [ "--template" ,"Mem: <usedratio>%"
+                                         , "--Low"      , "20"        -- units: %
+                                         , "--High"     , "90"        -- units: %
+                                         , "--low"      , "green"
+                                         , "--normal"   , "darkorange"
+                                         , "--high"     , "red"
+                                         ] 10
+                      -- battery monitor
+                    , Run Battery        [ "--template" , "Batt: <acstatus>"
+                                         , "--Low"      , "10"        -- units: %
+                                         , "--High"     , "80"        -- units: %
+                                         , "--low"      , "red"
+                                         , "--normal"   , "darkorange"
+                                         , "--high"     , "green"
+
+                                         , "--" -- battery specific options
+                                            -- discharging status
+                                         , "-o" 	, "<left>% (<timeleft>)"
+                                           -- AC "on" status
+                                         , "-O" 	, "<fc=#dAA520>Charging</fc>"
+                                           -- charged status
+                                         , "-i" 	, "<fc=#006000>Charged</fc>"
+                                         ] 50
+
+                    , Run Date "%d/%m/%y %H:%M" "date" 10
+                      
+                    , Run StdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "<fc=#03e0e0>%StdinReader%</fc> }{ %coretemp% | %multicpu% | %memory% | %dynnetwork% | %battery% | %date%"
+       }
