@@ -15,15 +15,15 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(column-number-mode)
+ '(column-number-mode nil)
  '(custom-safe-themes
    (quote
     ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (winum centered-cursor-mode diff-hl magit fuzzy auto-complete auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens projectile helm-projectile helm-swoop helm)))
- '(tool-bar-mode))
+    (neotree winum centered-cursor-mode diff-hl magit fuzzy auto-complete auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens projectile helm-projectile helm-swoop helm)))
+ '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -90,6 +90,7 @@
 
 (helm-projectile-on)
 (which-key-add-key-based-replacements "C-c p" "Projectile")
+(bind-key* "C-c p C-t" 'projectile-toggle-between-implementation-and-test)
 (projectile-global-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,7 +157,7 @@
 (global-auto-highlight-symbol-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;; AUTO COMPLETE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; AUTO COMPLETE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ac-config-default)
 (setq ac-auto-show-menu 0.2)
@@ -198,13 +199,39 @@
 	    ("C-c w u" . winner-undo)
 	    ("C-c w r" . winner-redo))
 
+(defun winum-assign-0-to-neotree ()
+  (when (string-match-p (buffer-name) ".*\\*NeoTree\\*.*") 10))
+(add-to-list 'winum-assign-functions #'winum-assign-0-to-neotree)
+(setq winum-ignored-buffers '(" *which-key*"))
+
 (winum-mode)
 (winner-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; NEOTREE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'neotree)
 
+(defun neotree-find-project-root ()
+  (interactive)
+  (if (neo-global--window-exists-p)
+      (neotree-hide)
+    (let ((origin-buffer-file-name (buffer-file-name)))
+      (neotree-find (projectile-project-root))
+      (neotree-find origin-buffer-file-name))))
+(bind-key* "C-c p t" 'neotree-find-project-root)
+
+(setq projectile-switch-project-action 'neotree-projectile-action
+      neo-smart-open                   t
+      neo-create-file-auto-open        t
+      neo-window-width                 32
+      ;; neo-theme                        (if (display-graphic-p) 'icons 'arrow)
+      neo-banner-message               "Press ? for neotree help"
+      neo-show-updir-line              nil
+      neo-mode-line-type               'neotree
+      neo-show-hidden-files            nil
+      neo-auto-indent-point            t
+      neo-vc-integration               '(face))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAGIT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -262,5 +289,6 @@
 ;; clj
 ;; scala
 ;; autosave
-;; neotree
 ;; belomonte thing
+;; all-the-items
+;; use package instead of require
