@@ -22,7 +22,11 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (neotree winum centered-cursor-mode diff-hl magit fuzzy auto-complete auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens projectile helm-projectile helm-swoop helm)))
+    (cider-eval-sexp-fu aggressive-indent rainbow-delimiters clojure-mode
+     neotree winum centered-cursor-mode diff-hl magit fuzzy auto-complete
+     auto-highlight-symbol undo-tree bind-key mwim which-key
+     fill-column-indicator solarized-theme smartparens projectile
+     helm-projectile helm-swoop helm)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -250,6 +254,7 @@
 	   ("c" . magit-commit)
 	   ("d" . magit-diff)
 	   ("p" . magit-push)
+	   ("P" . magit-pull)
 	   ("s" . magit-status)
 	   ("u" . magit-unstage-file)
 	   ("C-s l" . magit-stash-list)
@@ -267,6 +272,38 @@
 	  (lambda ()
 	    (local-set-key (kbd "C-c e b") 'eval-buffer)
 	    (local-set-key (kbd "C-c e r") 'eval-buffer)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; CLOJURE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;; clojure-mode
+(require 'clojure-mode)
+
+(define-clojure-indent
+  (facts 1)
+  (fact 1)
+  (defrecord '(2 nil nil (1))))
+(setq clojure-indent-style              :align-arguments
+      clojure-align-forms-automatically t)
+(defun my-clojure-mode-hook ()
+  (subw
+   ord-mode)
+  (smartparens-strict-mode)
+  (rainbow-delimiters-mode))
+(add-hook 'clojure-mode-hook #'my-clojure-mode-hook)
+
+;;;;;;;;; clj-refactor
+(require 'clj-refactor)
+
+(defun my-clj-refactor-hook ()
+  (clj-refactor-mode)
+  (yas-minor-mode)
+  (cljr-add-keybindings-with-prefix "C-c C-c"))
+(add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
+
+;;;;;;;;; cider
+(require 'cider-eval-sexp-fu)
 
 ;; mode line
 (global-linum-mode)
@@ -294,9 +331,10 @@
 ;; ;; numero da coluna
 ;; ;; nome do projeto?
 ;; ;; percentual da p'agina
-;; clj
 ;; scala
-;; autosave
-;; belomonte thing
+;; Belomonte thing
 ;; all-the-items
 ;; use package instead of require
+;; pop up thing of the auto-complete
+;; <BACKSPACE> in line with only <SPC>s does #'join-line
+;; hydra?
