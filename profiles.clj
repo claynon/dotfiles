@@ -1,13 +1,12 @@
 {:user
- {:dependencies [[cljdev "0.6.4-SNAPSHOT"]]
-  :injections   [(require 'nu)]
-  :repositories  [["nu-maven" {:url "s3p://nu-maven/releases/"
-                               :username [:gpg :env/artifacts_aws_access_key_id]
-                               :passphrase [:gpg :env/artifacts_aws_secret_access_key]}]]
-
-  :plugins [[s3-wagon-private "1.3.0"]]}
- :repl {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]
-                  [refactor-nrepl "2.0.0-SNAPSHOT"]]
-        :dependencies [[alembic "0.3.2"]
-                       [org.clojure/tools.nrepl "0.2.12"]]
+ {:dependencies        [[cljdev "0.6.10"]]
+  :injections          [(require 'nu)]
+  :plugin-repositories [["nu-maven" {:url "s3p://nu-maven/releases/"}]]
+  :plugins             [[s3-wagon-private "1.3.1"]]}
+ :repl {:plugins [[cider/cider-nrepl "0.16.0"]
+                  [refactor-nrepl "2.3.1"]
+                  [lein-kibit "0.1.5"]
+                  [lein-bikeshed "0.5.0"]]
+        :dependencies [[org.clojure/tools.nrepl "0.2.12"]
+                       [mvxcvi/puget "1.0.1"]]
         :repl-options {:timeout 120000}}}
