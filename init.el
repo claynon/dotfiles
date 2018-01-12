@@ -21,7 +21,12 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (company-quickhelp pos-tip exec-path-from-shell cider-eval-sexp-fu cider clj-refactor aggressive-indent rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens markdown projectile helm-projectile helm-swoop helm)))
+    (all-the-icons company-quickhelp pos-tip exec-path-from-shell
+     cider-eval-sexp-fu cider clj-refactor aggressive-indent rainbow-delimiters
+     clojure-mode neotree winum centered-cursor-mode diff-hl magit fuzzy
+     auto-highlight-symbol undo-tree bind-key mwim which-key
+     fill-column-indicator solarized-theme smartparens markdown projectile
+     helm-projectile helm-swoop helm)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -239,6 +244,7 @@
 ;;;;;;;;;; NEOTREE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'neotree)
+(require 'all-the-icons)
 
 (defun neotree-find-project-root ()
   (interactive)
@@ -255,8 +261,9 @@
 (put 'split-string 'lisp-indent-function 0)
 (setq neo-smart-open                   t
       neo-create-file-auto-open        t
-      neo-window-width                 32
-      ;; neo-theme                        (if (display-graphic-p) 'icons 'arrow)
+      neo-window-width                 (max (floor (* 0.1 (window-total-width)))
+					    32)
+      neo-theme                        (if (display-graphic-p) 'icons 'arrow)
       neo-banner-message               (concat "Project: "
 					       (car
 						 (last
@@ -418,7 +425,6 @@
 ;; ;; percentual da p'agina
 ;; scala
 ;; Belomonte thing
-;; all-the-items
 ;; hydra?
 ;; fix cider-eval-sexp-fu
 ;; figure out how to use shell
