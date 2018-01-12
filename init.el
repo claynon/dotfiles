@@ -21,12 +21,7 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (pos-tip exec-path-from-shell cider-eval-sexp-fu cider clj-refactor
-     aggressive-indent rainbow-delimiters clojure-mode neotree winum
-     centered-cursor-mode diff-hl magit fuzzy auto-complete
-     auto-highlight-symbol undo-tree bind-key mwim which-key
-     fill-column-indicator solarized-theme smartparens markdown projectile
-     helm-projectile helm-swoop helm)))
+    (company-quickhelp pos-tip exec-path-from-shell cider-eval-sexp-fu cider clj-refactor aggressive-indent rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens markdown projectile helm-projectile helm-swoop helm)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -185,21 +180,17 @@
 (global-auto-highlight-symbol-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;; AUTO COMPLETE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; COMPANY ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ac-config-default)
-(setq ac-quick-help-delay 0.2)
-(setq ac-use-fuzzy t)
+(require 'company)
+(add-hook 'after-init-hook 'global-company-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;; POPUP POS TIP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; COMPANY QUICKHELP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'popup-pos-tip)
-(defadvice popup-tip
-    (around popup-pos-tip-wrapper (string &rest args) activate)
-  (if (eq window-system 'x)
-      (apply 'popup-pos-tip string args)
-    ad-do-it))
+(require 'company-quickhelp)
+(company-quickhelp-mode 1)
+(setq company-quickhelp-delay 0.2)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; DIFF HIGHLIGHT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -363,9 +354,9 @@
 (defun my-clj-refactor-hook ()
   (clj-refactor-mode t)
   (yas-minor-mode t)
-  (cljr-add-keybindings-with-prefix "C-c c R"))
+  (cljr-add-keybindings-with-prefix "C-c c r"))
 (which-key-add-major-mode-key-based-replacements 'clojure-mode
-  "C-c c R" "Refactor")
+  "C-c c r" "Refactor")
 (add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
 
 ;;;;;;;;; cider
@@ -381,18 +372,16 @@
 (add-hook 'clojure-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-c c b") 'cider-load-buffer)
-	    (local-set-key (kbd "C-c c e") 'cider-eval-sexp-at-point)
-	    (local-set-key (kbd "C-c c n") 'cider-eval-ns-form)
-	    (local-set-key (kbd "C-c c r") 'cider-eval-region)
-	    (local-set-key (kbd "C-c c t") 'cljr-thread-first-all)
-	    (local-set-key (kbd "C-c c T") 'cljr-thread-last-all)
 	    (local-set-key (kbd "C-c c g b") 'cider-pop-back)
 	    (local-set-key (kbd "C-c c g g") 'cider-find-var)
 	    (local-set-key (kbd "C-c c g n") 'cider-find-ns)
 	    (local-set-key (kbd "C-c c s c") 'cider-connect)
+	    (local-set-key (kbd "C-c c s e") 'cider-eval-sexp-at-point)
 	    (local-set-key (kbd "C-c c s i") 'cider-jack-in)
 	    ;; cider-jack-in requires ipv6 to be enabled or change
 	    ;; cider-lein-parameters to use localhost instead of ::
+	    (local-set-key (kbd "C-c c s n") 'cider-eval-ns-form)
+	    (local-set-key (kbd "C-c c s r") 'cider-eval-region)
 	    (local-set-key (kbd "C-c c s s") 'cider-switch-to-repl-buffer)))
 (add-hook 'repl-mode
 	  (lambda ()
@@ -420,6 +409,8 @@
                     :width 'normal)
 
 (bind-key "M-j" 'join-line)
+(defalias 'yes-or-no-p 'y-or-n-p)
+(desktop-save-mode t)
 
 ;; barra inferior -- reddit share your mode-line customization
 ;; ;; numero da coluna
@@ -428,14 +419,12 @@
 ;; scala
 ;; Belomonte thing
 ;; all-the-items
-;; pop up thing of the auto-complete
-;; <BACKSPACE> in line with only <SPC>s does #'join-line
 ;; hydra?
 ;; fix cider-eval-sexp-fu
 ;; figure out how to use shell
 ;; fix auto-save
 ;; repl-mode
-;; y instead of yes
 ;; add M-m or something like that
 ;; clojure auto complete on popup, not minibuffer
 ;; check if can use bind-keys with prefix-map
+;; popup-pos-tip scroll
