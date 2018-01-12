@@ -21,7 +21,7 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (exec-path-from-shell cider-eval-sexp-fu cider clj-refactor
+    (pos-tip exec-path-from-shell cider-eval-sexp-fu cider clj-refactor
      aggressive-indent rainbow-delimiters clojure-mode neotree winum
      centered-cursor-mode diff-hl magit fuzzy auto-complete
      auto-highlight-symbol undo-tree bind-key mwim which-key
@@ -34,6 +34,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(add-to-list 'load-path "~/.emacs.d/lisp/")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -187,9 +188,18 @@
 ;;;;;;;;;; AUTO COMPLETE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ac-config-default)
-(setq ac-auto-show-menu 0.2)
 (setq ac-quick-help-delay 0.2)
 (setq ac-use-fuzzy t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; POPUP POS TIP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'popup-pos-tip)
+(defadvice popup-tip
+    (around popup-pos-tip-wrapper (string &rest args) activate)
+  (if (eq window-system 'x)
+      (apply 'popup-pos-tip string args)
+    ad-do-it))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; DIFF HIGHLIGHT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -418,7 +428,6 @@
 ;; scala
 ;; Belomonte thing
 ;; all-the-items
-;; use package instead of require
 ;; pop up thing of the auto-complete
 ;; <BACKSPACE> in line with only <SPC>s does #'join-line
 ;; hydra?
