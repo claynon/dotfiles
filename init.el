@@ -21,9 +21,9 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (all-the-icons company-quickhelp pos-tip exec-path-from-shell
-     cider-eval-sexp-fu cider clj-refactor aggressive-indent rainbow-delimiters
-     clojure-mode neotree winum centered-cursor-mode diff-hl magit fuzzy
+    (telephone-line all-the-icons company-quickhelp pos-tip exec-path-from-shell
+     cider clj-refactor aggressive-indent rainbow-delimiters clojure-mode
+     neotree winum centered-cursor-mode diff-hl magit fuzzy
      auto-highlight-symbol undo-tree bind-key mwim which-key
      fill-column-indicator solarized-theme smartparens markdown projectile
      helm-projectile helm-swoop helm)))
@@ -96,9 +96,11 @@
 (helm-projectile-on)
 (which-key-add-key-based-replacements "C-c p" "Projectile")
 (global-unset-key (kbd "C-c p s"))
-(bind-keys* ("C-c p C-t" . projectile-toggle-between-implementation-and-test)
-	    ("C-c p s"   . helm-projectile-grep)
-	    ("C-x C-b"   . projectile-switch-to-buffer))
+(bind-keys :prefix-map helm-projectile-projects-map
+	    :prefix "C-c p"
+	    ("C-t" . projectile-toggle-between-implementation-and-test)
+	    ("s"   . helm-projectile-grep))
+(bind-key* "C-x C-b" 'projectile-switch-to-buffer)
 (projectile-global-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,6 +169,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'which-key)
 
+(define-key which-key-mode-map (kbd "ESC C-h") 'which-key-C-h-dispatch)
 (bind-key* "M-m" 'which-key-show-major-mode)
 (setq which-key-side-window-max-height 0.2
       which-key-idle-delay             0.1
@@ -225,12 +228,14 @@
 	    ("M-6" . winum-select-window-6)
 	    ("M-7" . winum-select-window-7)
 	    ("M-8" . winum-select-window-8)
-	    ("M-9" . winum-select-window-9)
-	    ("C-c w /" . split-window-horizontally)
-	    ("C-c w -" . split-window-vertically)
-	    ("C-c w =" . balance-windows)
-	    ("C-c w u" . winner-undo)
-	    ("C-c w r" . winner-redo))
+	    ("M-9" . winum-select-window-9))
+(bind-keys* :prefix-map winum-base-map
+	    :prefix "C-c w"
+	    ("/" . split-window-horizontally)
+	    ("-" . split-window-vertically)
+	    ("=" . balance-windows)
+	    ("u" . winner-undo)
+	    ("r" . winner-redo))
 
 (defun winum-assign-0-to-neotree ()
   (when (string-match-p (buffer-name) ".*\\*NeoTree\\*.*") 10))
@@ -307,6 +312,31 @@
                                   "ARTIFACTS_AWS_SECRET_ACCESS_KEY"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; TELEPHONE MODE LINE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'telephone-line)
+
+(setq telephone-line-lhs
+      '((accent . (telephone-line-vc-segment
+                   telephone-line-erc-modified-channels-segment
+                   telephone-line-process-segment))
+        (nil    . (telephone-line-buffer-segment))))
+(setq telephone-line-rhs
+      '((nil    . (telephone-line-misc-info-segment))
+        (accent . (telephone-line-major-mode-segment))
+        (evil   . (telephone-line-airline-position-segment))))
+(setq telephone-line-primary-left-separator    'telephone-line-gradient
+      telephone-line-secondary-left-separator  'telephone-line-nil
+      telephone-line-primary-right-separator   'telephone-line-gradient
+      telephone-line-secondary-right-separator 'telephone-line-nil)
+
+(setq display-time-24hr-format t)
+(display-battery-mode t)
+(display-time-mode    t)
+
+(telephone-line-mode t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAGIT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys :prefix-map magit-mode-map
@@ -367,8 +397,6 @@
 (add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
 
 ;;;;;;;;; cider
-;; (require 'cider-eval-sexp-fu)
-
 (setq cider-save-file-on-load nil)
 (which-key-add-major-mode-key-based-replacements 'clojure-mode
   "C-c c" "Clojure")
@@ -392,14 +420,8 @@
 	    (local-set-key (kbd "C-c c s s") 'cider-switch-to-repl-buffer)))
 (add-hook 'repl-mode
 	  (lambda ()
-	    (local-set-key (kbd "C-c c c") 'cider-repl-clear-buffer)))
-
-;; mode line
-(global-linum-mode t)
-(column-number-mode t)
-(size-indication-mode t)
-(display-battery-mode t)
-(display-time-mode t)
+	    (local-set-key (kbd "C-c c c") 'cider-repl-clear-buffer)
+	    (local-set-key (kbd "C-c c s s") 'cider-switch-to-last-clojure-buffer)))
 
 ;; Misc
 (load-theme 'solarized-dark t)
@@ -414,6 +436,11 @@
                     :height 100
                     :weight 'normal
                     :width 'normal)
+(defun set-text-height (n)
+  (interactive "nHeight (100): ")
+  (set-face-attribute 'default nil
+		      :height  n))
+(bind-key "C-c t" 'set-text-height)
 
 (bind-key "M-j" 'join-line)
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -425,12 +452,8 @@
 ;; ;; percentual da p'agina
 ;; scala
 ;; Belomonte thing
-;; hydra?
-;; fix cider-eval-sexp-fu
 ;; figure out how to use shell
 ;; fix auto-save
 ;; repl-mode
 ;; add M-m or something like that
 ;; clojure auto complete on popup, not minibuffer
-;; check if can use bind-keys with prefix-map
-;; popup-pos-tip scroll
