@@ -95,8 +95,7 @@
 
 (helm-projectile-on)
 (which-key-add-key-based-replacements "C-c p" "Projectile")
-(global-unset-key (kbd "C-c p s"))
-(bind-keys :prefix-map helm-projectile-projects-map
+(bind-keys* :prefix-map helm-projectile-projects-map
 	    :prefix "C-c p"
 	    ("C-t" . projectile-toggle-between-implementation-and-test)
 	    ("s"   . helm-projectile-grep))
@@ -170,7 +169,6 @@
 (require 'which-key)
 
 (define-key which-key-mode-map (kbd "ESC C-h") 'which-key-C-h-dispatch)
-(bind-key* "M-m" 'which-key-show-major-mode)
 (setq which-key-side-window-max-height 0.2
       which-key-idle-delay             0.1
       which-key-add-column-padding     0)
@@ -355,6 +353,10 @@
 (which-key-add-key-based-replacements "C-c g C-s" "stash")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; MAJOR MODEs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-key-add-major-mode-key-based-replacements 'emacs-lisp-mode
@@ -362,8 +364,8 @@
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()
 	    (rainbow-delimiters-mode t)
-	    (local-set-key (kbd "C-c e b") 'eval-buffer)
-	    (local-set-key (kbd "C-c e r") 'eval-buffer)))
+	    (local-set-key (kbd "C-M-m b") 'eval-buffer)
+	    (local-set-key (kbd "C-M-m r") 'eval-region)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; CLOJURE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -391,37 +393,42 @@
 (defun my-clj-refactor-hook ()
   (clj-refactor-mode t)
   (yas-minor-mode t)
-  (cljr-add-keybindings-with-prefix "C-c c r"))
+  (cljr-add-keybindings-with-prefix "C-M-m r")
+  )
 (which-key-add-major-mode-key-based-replacements 'clojure-mode
-  "C-c c r" "Refactor")
+  "C-M-m r" "Refactor")
 (add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
 
 ;;;;;;;;; cider
+(defun set-clojure-keys (mode)
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m" "Clojure")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m s" "Repl")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m g" "Go to")
+  (add-hook (intern (concat (symbol-name mode) "-hook"))
+	    (lambda ()
+	      (local-set-key (kbd "C-M-m b") 'cider-load-buffer)
+	      (local-set-key (kbd "C-M-m c") 'cider-repl-clear-buffer)
+	      (local-set-key (kbd "C-M-m g b") 'cider-pop-back)
+	      (local-set-key (kbd "C-M-m g g") 'cider-find-var)
+	      (local-set-key (kbd "C-M-m g n") 'cider-find-ns)
+	      (local-set-key (kbd "C-M-m s c") 'cider-connect)
+	      (local-set-key (kbd "C-M-m s e") 'cider-eval-sexp-at-point)
+	      (local-set-key (kbd "C-M-m s i") 'cider-jack-in)                  ;; cider-jack-in requires ipv6 to be enabled or change cider-lein-parameters to use localhost instead of ::
+	      (local-set-key (kbd "C-M-m s n") 'cider-eval-ns-form)
+	      (local-set-key (kbd "C-M-m s r") 'cider-eval-region)
+	      (local-set-key (kbd "C-M-m s s")
+			     (if (eq m 'cider-repl-mode)
+				 'cider-switch-to-last-clojure-buffer
+			       'cider-switch-to-repl-buffer)))))
+
 (setq cider-save-file-on-load nil)
-(which-key-add-major-mode-key-based-replacements 'clojure-mode
-  "C-c c" "Clojure")
-(which-key-add-major-mode-key-based-replacements 'clojure-mode
-  "C-c c s" "Repl")
-(which-key-add-major-mode-key-based-replacements 'clojure-mode
-  "C-c c g" "Go to")
-(add-hook 'clojure-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-c c b") 'cider-load-buffer)
-	    (local-set-key (kbd "C-c c g b") 'cider-pop-back)
-	    (local-set-key (kbd "C-c c g g") 'cider-find-var)
-	    (local-set-key (kbd "C-c c g n") 'cider-find-ns)
-	    (local-set-key (kbd "C-c c s c") 'cider-connect)
-	    (local-set-key (kbd "C-c c s e") 'cider-eval-sexp-at-point)
-	    (local-set-key (kbd "C-c c s i") 'cider-jack-in)
-	    ;; cider-jack-in requires ipv6 to be enabled or change
-	    ;; cider-lein-parameters to use localhost instead of ::
-	    (local-set-key (kbd "C-c c s n") 'cider-eval-ns-form)
-	    (local-set-key (kbd "C-c c s r") 'cider-eval-region)
-	    (local-set-key (kbd "C-c c s s") 'cider-switch-to-repl-buffer)))
-(add-hook 'repl-mode
-	  (lambda ()
-	    (local-set-key (kbd "C-c c c") 'cider-repl-clear-buffer)
-	    (local-set-key (kbd "C-c c s s") 'cider-switch-to-last-clojure-buffer)))
+(dolist (mode '(clojure-mode
+		clojurec-mode
+		clojurescript-mode
+		clojurex-mode
+		cider-repl-mode
+		cider-clojure-interaction-mode))
+  (set-clojure-keys mode))
 
 ;; Misc
 (load-theme 'solarized-dark t)
@@ -446,14 +453,8 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (desktop-save-mode t)
 
-;; barra inferior -- reddit share your mode-line customization
-;; ;; numero da coluna
-;; ;; nome do projeto?
-;; ;; percentual da p'agina
 ;; scala
 ;; Belomonte thing
 ;; figure out how to use shell
 ;; fix auto-save
-;; repl-mode
-;; add M-m or something like that
 ;; clojure auto complete on popup, not minibuffer
