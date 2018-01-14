@@ -397,6 +397,34 @@
 	    ("C-," . my-previous-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; WINDOW TEMPLATE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load-theme 'solarized-dark t)
+(menu-bar-mode -1)
+(toggle-scroll-bar -1)
+(tool-bar-mode -1)
+(save-place-mode t)
+(set-face-attribute 'default nil
+                    :family "Source Code Pro"
+                    :height 100
+                    :weight 'normal
+                    :width 'normal)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; MISC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-hl-line-mode t)
+(defun set-text-height (n)
+  (interactive "nHeight (100): ")
+  (set-face-attribute 'default nil
+		      :height  n))
+(bind-key "C-c t" 'set-text-height)
+(bind-key* "C-c r" 'rename-buffer)
+(bind-key "M-j" 'join-line)
+(defalias 'yes-or-no-p 'y-or-n-p)
+(desktop-save-mode t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAJOR MODEs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -510,30 +538,6 @@
 		cider-repl-mode
 		cider-clojure-interaction-mode))
   (set-clojure-keys mode))
-
-;; Misc
-(load-theme 'solarized-dark t)
-(menu-bar-mode -1)
-(toggle-scroll-bar -1)
-(tool-bar-mode -1)
-(save-place-mode t)
-(global-hl-line-mode t)
-
-(set-face-attribute 'default nil
-                    :family "Source Code Pro"
-                    :height 100
-                    :weight 'normal
-                    :width 'normal)
-(defun set-text-height (n)
-  (interactive "nHeight (100): ")
-  (set-face-attribute 'default nil
-		      :height  n))
-(bind-key "C-c t" 'set-text-height)
-(bind-key* "C-c r" 'rename-buffer)
-
-(bind-key "M-j" 'join-line)
-(defalias 'yes-or-no-p 'y-or-n-p)
-(desktop-save-mode t)
 
 ;; scala
 ;; Belomonte thing
