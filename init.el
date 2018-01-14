@@ -17,7 +17,8 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
+    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4"
+     default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -171,7 +172,8 @@
 (define-key which-key-mode-map (kbd "ESC C-h") 'which-key-C-h-dispatch)
 (setq which-key-side-window-max-height 0.2
       which-key-idle-delay             0.1
-      which-key-add-column-padding     0)
+      which-key-add-column-padding     0
+      which-key-sort-order             'which-key-key-order-alpha)
 (which-key-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,10 +288,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; AUTO-SAVE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq auto-save-default           t
-;;       auto-save-visited-file-name t
-;;       auto-save-interval          20
-;;       auto-save-timeout           1)
+;; (setq-default auto-save-default           t
+;; 	      auto-save-visited-file-name t
+;; 	      auto-save-interval          20
+;; 	      auto-save-timeout           1
+;; 	      create-lockfiles            nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; EXEC PATH FROM SHELL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -393,33 +396,60 @@
 (defun my-clj-refactor-hook ()
   (clj-refactor-mode t)
   (yas-minor-mode t)
-  (cljr-add-keybindings-with-prefix "C-M-m r")
-  )
+  (cljr-add-keybindings-with-prefix "C-M-m r"))
+(setq cljr-favor-prefix-notation nil)
 (which-key-add-major-mode-key-based-replacements 'clojure-mode
   "C-M-m r" "Refactor")
 (add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
 
+
 ;;;;;;;;; cider
 (defun set-clojure-keys (mode)
   (which-key-add-major-mode-key-based-replacements mode "C-M-m" "Clojure")
-  (which-key-add-major-mode-key-based-replacements mode "C-M-m s" "Repl")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m d" "Docs")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m e" "Eval")
   (which-key-add-major-mode-key-based-replacements mode "C-M-m g" "Go to")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r a" "Add")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r c" "Cycle")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r d" "Destruct")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r e" "Extract")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r h" "Hotload")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r m" "Move")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r r" "Rename")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r t" "Thread")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m r u" "Unwind")
+  (which-key-add-major-mode-key-based-replacements mode "C-M-m s" "Repl")
   (add-hook (intern (concat (symbol-name mode) "-hook"))
 	    (lambda ()
 	      (local-set-key (kbd "C-M-m b") 'cider-load-buffer)
 	      (local-set-key (kbd "C-M-m c") 'cider-repl-clear-buffer)
+
+	      (local-set-key (kbd "C-M-m d a") 'cider-apropos)
+	      (local-set-key (kbd "C-M-m d d") 'cider-doc)
+	      (local-set-key (kbd "C-M-m d j") 'cider-javadoc)
+	      (local-set-key (kbd "C-M-m d n") 'cider-browse-ns)
+
+	      (local-set-key (kbd "C-M-m e b") 'cider-load-buffer)
+	      (local-set-key (kbd "C-M-m e e") 'cider-eval-sexp-at-point)
+	      (local-set-key (kbd "C-M-m e E") 'cider-insert-last-sexp-in-repl)
+	      (local-set-key (kbd "C-M-m e n") 'cider-eval-ns-form)
+	      (local-set-key (kbd "C-M-m e N") 'cider-insert-ns-form-in-repl)
+	      (local-set-key (kbd "C-M-m e p") 'cider-pprint-eval-last-sexp)
+	      (local-set-key (kbd "C-M-m e P") 'cider-eval-print-last-sexp)
+	      (local-set-key (kbd "C-M-m e r") 'cider-eval-region)
+	      (local-set-key (kbd "C-M-m e R") 'cider-insert-region-in-repl)
+
 	      (local-set-key (kbd "C-M-m g b") 'cider-pop-back)
 	      (local-set-key (kbd "C-M-m g g") 'cider-find-var)
 	      (local-set-key (kbd "C-M-m g n") 'cider-find-ns)
+
 	      (local-set-key (kbd "C-M-m s c") 'cider-connect)
-	      (local-set-key (kbd "C-M-m s e") 'cider-eval-sexp-at-point)
 	      (local-set-key (kbd "C-M-m s i") 'cider-jack-in)                  ;; cider-jack-in requires ipv6 to be enabled or change cider-lein-parameters to use localhost instead of ::
-	      (local-set-key (kbd "C-M-m s n") 'cider-eval-ns-form)
-	      (local-set-key (kbd "C-M-m s r") 'cider-eval-region)
-	      (local-set-key (kbd "C-M-m s s")
-			     (if (eq m 'cider-repl-mode)
-				 'cider-switch-to-last-clojure-buffer
-			       'cider-switch-to-repl-buffer)))))
+	      (local-set-key (kbd "C-M-m s I") 'cider-jack-in-clojurescript)
+	      (local-set-key (kbd "C-M-m s s") 'cider-switch-to-repl-buffer)
+	      (local-set-key (kbd "C-M-m s S")
+			     'cider-switch-to-last-clojure-buffer)
+	      (local-set-key (kbd "C-M-m s q") 'cider-quit))))
 
 (setq cider-save-file-on-load nil)
 (dolist (mode '(clojure-mode
@@ -455,6 +485,4 @@
 
 ;; scala
 ;; Belomonte thing
-;; figure out how to use shell
 ;; fix auto-save
-;; clojure auto complete on popup, not minibuffer
