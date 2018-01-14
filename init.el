@@ -110,6 +110,7 @@
 (require 'smartparens-config)
 
 (add-hook 'prog-mode-hook #'smartparens-mode)
+(add-hook 'ielm-mode-hook #'smartparens-mode)
 (bind-keys :prefix-map smartparens-mode-map
 	   :prefix "C-c l"
 	   ("s"   . sp-forward-slurp-sexp)
@@ -210,6 +211,7 @@
 ;;;;;;;;;; CENTERED CURSOR  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'centered-cursor-mode)
+(bind-key* "C-c b" 'centered-cursor-mode)
 (global-centered-cursor-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -292,6 +294,7 @@
 	      auto-save-visited-file-name t
 	      auto-save-interval          20
 	      auto-save-timeout           1
+	      make-backup-files           nil
 	      create-lockfiles            nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -356,6 +359,44 @@
 (which-key-add-key-based-replacements "C-c g C-s" "stash")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; BUFFER NAVIGATION ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar my-skippable-buffers '("^\\*Messages\\*$"
+			       "^\\*scratch\\*$"
+			       "^\\*Help\\*$"
+			       "^\\*[hH]elm"
+			       "^\\*Buffer")
+  "Buffer names ignored by `my-next-buffer' and `my-previous-buffer'.")
+
+(defun my-change-buffer (change-buffer)
+  "Call CHANGE-BUFFER until current buffer is not in `my-skippable-buffers'."
+  (let ((initial (current-buffer)))
+    (funcall change-buffer)
+    (let ((first-change (current-buffer)))
+      (catch 'loop
+        (while (seq-filter (lambda (regex) (string-match regex (buffer-name)))
+			   my-skippable-buffers)
+          (funcall change-buffer)
+          (when (eq (current-buffer) first-change)
+            (switch-to-buffer initial)
+            (throw 'loop t)))))))
+
+(defun my-next-buffer ()
+  "Variant of `next-buffer' that skips `my-skippable-buffers'."
+  (interactive)
+  (my-change-buffer 'next-buffer))
+
+(defun my-previous-buffer ()
+  "Variant of `previous-buffer' that skips `my-skippable-buffers'."
+  (interactive)
+  (my-change-buffer 'previous-buffer))
+
+(global-set-key [remap next-buffer] 'my-next-buffer)
+(global-set-key [remap previous-buffer] 'my-previous-buffer)
+(bind-keys* ("C-." . my-next-buffer)
+	    ("C-," . my-previous-buffer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAJOR MODEs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -378,6 +419,7 @@
 	    (rainbow-delimiters-mode t)
 	    (local-set-key (kbd "C-M-m b") 'eval-buffer)
 	    (local-set-key (kbd "C-M-m r") 'eval-region)))
+(add-hook 'ielm-mode-hook (lambda () (rainbow-delimiters-mode t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; CLOJURE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
