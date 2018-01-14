@@ -288,11 +288,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; AUTO-SAVE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq-default auto-save-default           t
-;; 	      auto-save-visited-file-name t
-;; 	      auto-save-interval          20
-;; 	      auto-save-timeout           1
-;; 	      create-lockfiles            nil)
+(setq-default auto-save-default           t
+	      auto-save-visited-file-name t
+	      auto-save-interval          20
+	      auto-save-timeout           1
+	      create-lockfiles            nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; EXEC PATH FROM SHELL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,6 +358,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAJOR MODEs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; SHELL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (add-hook 'term-mode-hook (lambda () (centered-cursor-mode nil)))
+(bind-key "C-c s" `(lambda (&optional arg)
+		     (interactive)
+		     (ansi-term "/bin/bash")))
+(which-key-add-key-based-replacements "C-c s" "shell")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -478,6 +487,7 @@
   (set-face-attribute 'default nil
 		      :height  n))
 (bind-key "C-c t" 'set-text-height)
+(bind-key* "C-c r" 'rename-buffer)
 
 (bind-key "M-j" 'join-line)
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -485,4 +495,4 @@
 
 ;; scala
 ;; Belomonte thing
-;; fix auto-save
+;; figure out term-mode
