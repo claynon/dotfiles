@@ -22,10 +22,10 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (telephone-line all-the-icons company-quickhelp pos-tip exec-path-from-shell
-     cider clj-refactor aggressive-indent rainbow-delimiters clojure-mode
-     neotree winum centered-cursor-mode diff-hl magit fuzzy
-     auto-highlight-symbol undo-tree bind-key mwim which-key
+    (json-mode telephone-line all-the-icons company-quickhelp pos-tip
+     exec-path-from-shell cider clj-refactor aggressive-indent
+     rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl
+     magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key
      fill-column-indicator solarized-theme smartparens markdown projectile
      helm-projectile helm-swoop helm)))
  '(tool-bar-mode nil))
@@ -155,6 +155,7 @@
 
 (setq whitespace-style '(face lines-tail))
 (setq whitespace-line-column 80)
+(bind-key* "C-c W" 'whitespace-mode)
 (global-whitespace-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -413,7 +414,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MISC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-hl-line-mode t)
 (defun set-text-height (n)
   (interactive "nHeight (100): ")
   (set-face-attribute 'default nil
@@ -436,6 +436,13 @@
 		     (interactive)
 		     (ansi-term "/bin/bash")))
 (which-key-add-key-based-replacements "C-c s" "shell")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; JSON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'json-mode-hook (lambda ()
+			    (rainbow-delimiters-mode t)
+			    (whitespace-mode nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -542,3 +549,4 @@
 ;; scala
 ;; Belomonte thing
 ;; figure out term-mode
+;; whitelist some buffers with "$\\*.**^" and blacklist the others
