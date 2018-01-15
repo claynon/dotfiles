@@ -22,8 +22,8 @@
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (json-mode telephone-line all-the-icons company-quickhelp pos-tip
-     exec-path-from-shell cider clj-refactor aggressive-indent
+    (multi-term ensime json-mode telephone-line all-the-icons company-quickhelp
+     pos-tip exec-path-from-shell cider clj-refactor aggressive-indent
      rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl
      magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key
      fill-column-indicator solarized-theme smartparens markdown projectile
@@ -83,8 +83,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'helm-swoop)
 
-(bind-keys* ("C-s" . helm-swoop)
-	    ("C-r" . helm-swoop))
+(bind-keys ("C-s" . helm-swoop)
+	   ("C-r" . helm-swoop))
 (define-key helm-command-map (kbd "C-s") 'helm-multi-swoop)
 (setq helm-swoop-split-direction    'split-window-horizontally
       helm-swoop-move-to-line-cycle t)
@@ -119,25 +119,35 @@
 	   ("B"   . sp-backward-barf-sexp)
 	   ("k"   . sp-kill-sexp)
 	   ("K"   . sp-backward-kill-sexp)
-	   ("u"   . sp-up-sexp)
-	   ("U"   . sp-backward-up-sexp)
+	   ("u"   . sp-backward-up-sexp)
+	   ("U"   . sp-up-sexp)
 	   ("C-u" . sp-unwrap-sexp)
 	   ("r"   . sp-raise-sexp)
 	   ("<right>" . ahs-forward)
 	   ("<left>"  . ahs-backward))
-(bind-key "C-(" `(lambda (&optional arg)
-		   (interactive "P")
-		   (sp-wrap-with-pair "(")))
-(bind-key "ESC [" `(lambda (&optional arg)
-		     (interactive "P")
-		     (sp-wrap-with-pair "[")))
-(bind-key "C-{" `(lambda (&optional arg)
-		   (interactive "P")
-		   (sp-wrap-with-pair "{")))
-(bind-key "C-\"" `(lambda (&optional arg)
-		    (interactive "P")
-		    (sp-wrap-with-pair "\"")))
+(sp-pair "(" ")" :wrap "C-(")
+(sp-pair "[" "]" :wrap "ESC [")
+(sp-pair "[" "]" :wrap "M-[")
+(sp-pair "{" "}" :wrap "C-{")
+(sp-pair "\"" "\"" :wrap "C-\"")
 (which-key-add-key-based-replacements "C-c l" "Lisp")
+
+(defun contextual-backspace ()
+  "Hungry whitespace or delete word depending on context."
+  (interactive)
+  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
+      (while (looking-back "[[:space:]\n]" (- (point) 1))
+        (delete-char -1))
+    (cond
+     ((and (boundp 'smartparens-strict-mode)
+           smartparens-strict-mode)
+      (sp-backward-kill-word 1))
+     ((and (boundp 'subword-mode)
+           subword-mode)
+      (subword-backward-kill 1))
+     (t
+      (backward-kill-word 1)))))
+(global-set-key (kbd "C-<backspace>") 'contextual-backspace)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; FILL COLUMN INDICATOR ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -423,6 +433,7 @@
 (bind-key "M-j" 'join-line)
 (defalias 'yes-or-no-p 'y-or-n-p)
 (desktop-save-mode t)
+(global-linum-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; MAJOR MODEs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -431,11 +442,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; SHELL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (add-hook 'term-mode-hook (lambda () (centered-cursor-mode nil)))
-(bind-key "C-c s" `(lambda (&optional arg)
-		     (interactive)
-		     (ansi-term "/bin/bash")))
+(require 'term)
+(require 'multi-term)
+(bind-key "C-c s" 'multi-term)
 (which-key-add-key-based-replacements "C-c s" "shell")
+(add-hook 'term-mode-hook (lambda () (centered-cursor-mode nil)))
+
+(define-key term-mode-map (kbd "C-M-m") nil)
+(define-key term-mode-map (kbd "C-M-m l") 'term-line-mode)
+(define-key term-mode-map (kbd "C-M-m c") 'term-char-mode)
+(define-key term-mode-map (kbd "C-r") 'term-send-reverse-search-history)
+(define-key term-raw-map (kbd "C-M-m") nil)
+(define-key term-raw-map (kbd "C-M-m l") 'term-line-mode)
+(define-key term-raw-map (kbd "C-M-m c") 'term-char-mode)
+(define-key term-raw-map (kbd "C-r") 'term-send-reverse-search-history)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; JSON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -546,7 +566,27 @@
 		cider-clojure-interaction-mode))
   (set-clojure-keys mode))
 
-;; scala
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; SCALA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun scala-mode-newline-comments ()
+  "Custom newline appropriate for `scala-mode'."
+  ;; shouldn't this be in a post-insert hook?
+  (interactive)
+  (newline-and-indent)
+  (scala-indent:insert-asterisk-on-multiline-comment))
+
+(setq ensime-search-interface        'helm
+      scala-indent:use-javadoc-style t)
+(add-hook 'scala-mode-hook
+	  (lambda ()
+	    (scala-mode:goto-start-of-code)
+	    (setq comment-start       "/* "
+		  comment-end         " */"
+		  comment-style       'multi-line
+		  comment-empty-lines t)
+	    (local-set-key (kbd "RET" 'scala-mode-newline-comments))))
+
 ;; Belomonte thing
 ;; figure out term-mode
 ;; whitelist some buffers with "$\\*.**^" and blacklist the others
