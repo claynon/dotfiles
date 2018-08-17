@@ -10,6 +10,7 @@
 
 (package-initialize)
 
+(load "~/.emacs.d/lisp/PG/generic/proof-site")
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -17,17 +18,12 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4"
-     default)))
+    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(markdown-command "markdown_py")
  '(package-selected-packages
    (quote
-    (multi-term ensime json-mode telephone-line all-the-icons company-quickhelp
-     pos-tip exec-path-from-shell cider clj-refactor aggressive-indent
-     rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl
-     magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key
-     fill-column-indicator solarized-theme smartparens markdown projectile
-     helm-projectile helm-swoop helm)))
+    (yaml-mode company-coq sml-mode markdown-mode highlight-parentheses multi-term ensime json-mode telephone-line all-the-icons company-quickhelp pos-tip exec-path-from-shell cider clj-refactor aggressive-indent rainbow-delimiters clojure-mode neotree winum centered-cursor-mode diff-hl magit fuzzy auto-highlight-symbol undo-tree bind-key mwim which-key fill-column-indicator solarized-theme smartparens markdown projectile helm-projectile helm-swoop helm)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -35,7 +31,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(add-to-list 'load-path "~/.emacs.d/lisp/")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,6 +106,10 @@
 
 (add-hook 'prog-mode-hook #'smartparens-mode)
 (add-hook 'ielm-mode-hook #'smartparens-mode)
+(add-hook 'cider-repl-mode-hook #'smartparens-mode)
+(add-hook 'prog-mode-hook #'highlight-parentheses-mode)
+(add-hook 'ielm-mode-hook #'highlight-parentheses-mode)
+(add-hook 'cider-repl-mode-hook #'highlight-parentheses-mode)
 (bind-keys :prefix-map smartparens-mode-map
 	   :prefix "C-c l"
 	   ("s"   . sp-forward-slurp-sexp)
@@ -130,6 +129,7 @@
 (sp-pair "[" "]" :wrap "M-[")
 (sp-pair "{" "}" :wrap "C-{")
 (sp-pair "\"" "\"" :wrap "C-\"")
+(sp-pair "\'" "\'" :wrap "C-\'")
 (which-key-add-key-based-replacements "C-c l" "Lisp")
 
 (defun contextual-backspace ()
@@ -164,7 +164,7 @@
 (require 'whitespace)
 
 (setq whitespace-style '(face lines-tail))
-(setq whitespace-line-column 80)
+(setq whitespace-line-column 120)
 (bind-key* "C-c W" 'whitespace-mode)
 (global-whitespace-mode t)
 
@@ -281,6 +281,7 @@
       neo-create-file-auto-open        t
       neo-window-width                 (max (floor (* 0.1 (window-total-width)))
 					    32)
+      neo-window-fixed-size            nil
       neo-theme                        (if (display-graphic-p) 'icons 'arrow)
       neo-banner-message               (concat "Project: "
 					       (car
@@ -410,7 +411,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; WINDOW TEMPLATE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load-theme 'solarized-dark t)
+(load-theme 'solarized-light t)
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
 (tool-bar-mode -1)
@@ -457,10 +458,12 @@
 (define-key term-raw-map (kbd "C-M-m c") 'term-char-mode)
 (define-key term-raw-map (kbd "C-r") 'term-send-reverse-search-history)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;;;;;;;; JSON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'json-mode-hook (lambda ()
+			    (make-local-variable 'js-indent-level)
+			    (setq js-indent-level 2)
 			    (rainbow-delimiters-mode t)
 			    (whitespace-mode nil)))
 
@@ -486,7 +489,10 @@
 (define-clojure-indent
   (facts 1)
   (fact 1)
-  (defrecord '(2 nil nil (1))))
+  (flow 1)
+  (let-entities 2)
+  (defrecord '(2 nil nil (1)))
+  (prop/for-all 1))
 (setq clojure-indent-style              :align-arguments
       clojure-align-forms-automatically t)
 (defun my-clojure-mode-hook ()
@@ -507,7 +513,7 @@
 (which-key-add-major-mode-key-based-replacements 'clojure-mode
   "C-M-m r" "Refactor")
 (add-hook 'clojure-mode-hook #'my-clj-refactor-hook)
-
+(add-hook 'cider-repl-mode-hook (lambda () (centered-cursor-mode nil)))
 
 ;;;;;;;;; cider
 (defun set-clojure-keys (mode)
@@ -529,6 +535,7 @@
 	    (lambda ()
 	      (local-set-key (kbd "C-M-m b") 'cider-load-buffer)
 	      (local-set-key (kbd "C-M-m c") 'cider-repl-clear-buffer)
+	      (local-set-key (kbd "C-M-m TAB") 'clojure-align)
 
 	      (local-set-key (kbd "C-M-m d a") 'cider-apropos)
 	      (local-set-key (kbd "C-M-m d d") 'cider-doc)
@@ -538,26 +545,39 @@
 	      (local-set-key (kbd "C-M-m e b") 'cider-load-buffer)
 	      (local-set-key (kbd "C-M-m e e") 'cider-eval-sexp-at-point)
 	      (local-set-key (kbd "C-M-m e E") 'cider-insert-last-sexp-in-repl)
+	      (local-set-key (kbd "C-M-m e d") 'cider-eval-defun-at-point)
+	      (local-set-key (kbd "C-M-m e C-e") 'cider-eval-last-sexp-and-replace)
+	      (local-set-key (kbd "C-M-m e i") 'cider-inspect)
 	      (local-set-key (kbd "C-M-m e n") 'cider-eval-ns-form)
 	      (local-set-key (kbd "C-M-m e N") 'cider-insert-ns-form-in-repl)
-	      (local-set-key (kbd "C-M-m e p") 'cider-pprint-eval-last-sexp)
-	      (local-set-key (kbd "C-M-m e P") 'cider-eval-print-last-sexp)
+	      (local-set-key (kbd "C-M-m e p") 'cider-eval-print-last-sexp)
 	      (local-set-key (kbd "C-M-m e r") 'cider-eval-region)
 	      (local-set-key (kbd "C-M-m e R") 'cider-insert-region-in-repl)
+	      (local-set-key (kbd "C-M-m e x") 'cider-refresh)
+	      (local-set-key (kbd "C-M-m e x") 'cider-eval-defun-to-comment)
 
 	      (local-set-key (kbd "C-M-m g b") 'cider-pop-back)
 	      (local-set-key (kbd "C-M-m g g") 'cider-find-var)
 	      (local-set-key (kbd "C-M-m g n") 'cider-find-ns)
 
 	      (local-set-key (kbd "C-M-m s c") 'cider-connect)
-	      (local-set-key (kbd "C-M-m s i") 'cider-jack-in)                  ;; cider-jack-in requires ipv6 to be enabled or change cider-lein-parameters to use localhost instead of ::
-	      (local-set-key (kbd "C-M-m s I") 'cider-jack-in-clojurescript)
+	      (local-set-key (kbd "C-M-m s Q") 'cider-interrupt)
+	      (local-set-key (kbd "C-M-m s h") 'cider-repl-history)
+	      (local-set-key (kbd "C-M-m s i") 'cider-interrupt)
+	      (local-set-key (kbd "C-M-m s j") 'cider-jack-in)                  ;; cider-jack-in requires ipv6 to be enabled or change cider-lein-parameters to use localhost instead of ::
+	      (local-set-key (kbd "C-M-m s J") 'cider-jack-in-clojurescript)
+	      (local-set-key (kbd "C-M-m s r") 'cider-refresh)
 	      (local-set-key (kbd "C-M-m s s") 'cider-switch-to-repl-buffer)
-	      (local-set-key (kbd "C-M-m s S")
-			     'cider-switch-to-last-clojure-buffer)
-	      (local-set-key (kbd "C-M-m s q") 'cider-quit))))
+	      (local-set-key (kbd "C-M-m s S") 'cider-switch-to-last-clojure-buffer)
+	      (local-set-key (kbd "C-M-m s q") 'cider-quit)
+	      (local-set-key (kbd "C-M-m s <return>") 'cider-switch-to-repl-buffer))))
+(define-key cider-repl-mode-map (kbd "C-<return>") #'cider-repl-newline-and-indent)
+(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
 
-(setq cider-save-file-on-load nil)
+(setq cider-save-file-on-load             nil
+      cider-repl-pop-to-buffer-on-connect 'display-only
+      cider-repl-use-pretty-printing t)
 (dolist (mode '(clojure-mode
 		clojurec-mode
 		clojurescript-mode
@@ -571,21 +591,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun scala-mode-newline-comments ()
   "Custom newline appropriate for `scala-mode'."
-  ;; shouldn't this be in a post-insert hook?
   (interactive)
   (newline-and-indent)
-  (scala-indent:insert-asterisk-on-multiline-comment))
+  (scala-indent:insert-asterisk-on-multiline-comment)
+  )
+
 
 (setq ensime-search-interface        'helm
       scala-indent:use-javadoc-style t)
 (add-hook 'scala-mode-hook
 	  (lambda ()
 	    (scala-mode:goto-start-of-code)
-	    (setq comment-start       "/* "
-		  comment-end         " */"
-		  comment-style       'multi-line
-		  comment-empty-lines t)
-	    (local-set-key (kbd "RET" 'scala-mode-newline-comments))))
+	    (auto-highlight-symbol-mode t)
+	    ;; (setq comment-start       "/* "
+	    ;; 	  comment-end         " */"
+	    ;; 	  comment-style       'multi-line
+	    ;; 	  comment-empty-lines t)
+	    (local-set-key (kbd "RET") 'scala-mode-newline-comments)
+
+	    (which-key-add-major-mode-key-based-replacements 'scala-mode "C-M-m g" "Go to")
+	    (local-set-key (kbd "C-M-m g b") 'ensime-pop-find-definition-stack)
+	    (local-set-key (kbd "C-M-m g g") 'ensime-edit-definition)
+
+	    (local-set-key (kbd "C-M-m s e") 'ensime)))
+
+
 
 ;; Belomonte thing
 ;; figure out term-mode
